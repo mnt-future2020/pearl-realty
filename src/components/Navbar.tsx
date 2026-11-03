@@ -12,6 +12,7 @@ const NAV_LINKS = [
   { label: "Market", id: "services" },
   { label: "Clientele", id: "clients" },
   { label: "Insights", id: "insights" },
+  { label: "Capital Migration Pathway Assessment", id: "capital-migration" },
   { label: "Contact", id: "contact" },
 ];
 

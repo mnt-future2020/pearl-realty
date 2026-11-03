@@ -77,6 +77,7 @@ const FooterSection = () => {
                 { label: "Value Pillars", id: "services" },
                 { label: "Market Intelligence", id: "insights" },
                 { label: "Client Portfolio", id: "clients" },
+                { label: "Capital Migration Pathway Assessment", id: "capital-migration" },
                 { label: "Contact", id: "contact" },
               ].map((item) => (
                 <button

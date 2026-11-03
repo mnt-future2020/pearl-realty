@@ -51,9 +51,9 @@
     "gsap": "^3.15.0",
     "input-otp": "^1.4.2",
     "lucide-react": "^0.462.0",
-    "next": "^14.2.35",
+    "next": "^15.5.28",
     "next-themes": "^0.3.0",
-    "nodemailer": "^8.0.7",
+    "nodemailer": "^10.3.1",
     "react": "^18.3.1",
     "react-day-picker": "^8.10.1",
     "react-dom": "^18.3.1",
@@ -65,7 +65,7 @@
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
     "vaul": "^0.9.9",
-    "zod": "^3.25.76"
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@eslint/js": "^9.32.0",
@@ -76,14 +76,16 @@
     "@types/react-dom": "^18.3.7",
     "autoprefixer": "^10.4.21",
     "eslint": "^9.32.0",
-    "eslint-config-next": "^16.2.3",
+    "eslint-config-next": "^15.5.28",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
     "globals": "^15.15.0",
-    "lovable-tagger": "^1.1.13",
-    "postcss": "^8.5.6",
+    "postcss": "^8.5.32",
     "tailwindcss": "^3.4.17",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.38.0"
+  },
+  "overrides": {
+    "postcss": "$postcss"
   }
 }

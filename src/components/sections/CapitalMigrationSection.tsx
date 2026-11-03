@@ -580,7 +580,7 @@ const CapitalMigrationSection = () => {
 
   return (
     // Sits above the CTA and overlaps it, so the hand image runs behind the dome. z-[35] clears the CTA's z-30 content.
-    <section ref={sectionRef} id="capital-migration" className="relative z-[35] -mt-11 md:-mt-[75px]">
+    <section ref={sectionRef} id="capital-migration" className="relative z-[35] -mt-11 md:-mt-[75px] scroll-mt-16">
       {/* Light: heading and what you receive */}
       <div className="relative overflow-hidden text-foreground pt-20 md:pt-28 pb-6">
         <SectionCurve className="top-0" fill="#F8F7F4" d={DOME} />

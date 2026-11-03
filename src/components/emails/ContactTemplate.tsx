@@ -14,22 +14,30 @@ import {
 } from "@react-email/components";
 import * as React from "react";
 
-interface ContactTemplateProps {
+export interface ContactTemplateProps {
   name: string;
   email: string;
-  subject: string;
-  message: string;
+  enquiringAs: string;
+  jurisdictions: string;
+  allocation: string;
+  timeline: string;
+  resolve?: string;
+  introducedBy?: string;
 }
 
 export const ContactTemplate = ({
   name,
   email,
-  subject,
-  message,
+  enquiringAs,
+  jurisdictions,
+  allocation,
+  timeline,
+  resolve,
+  introducedBy,
 }: ContactTemplateProps) => (
   <Html>
     <Head />
-    <Preview>New Institutional Enquiry: {subject}</Preview>
+    <Preview>New Assessment Request: {name}</Preview>
     <Body style={main}>
       <Container style={container}>
         <Section style={header}>
@@ -39,44 +47,44 @@ export const ContactTemplate = ({
         
         <Section style={content}>
           <Text style={paragraph}>
-            <strong>New Enquiry Received</strong>
+            <strong>New Assessment Request</strong>
           </Text>
           
           <Hr style={hr} />
           
-          <Row style={detailRow}>
-            <Column style={labelCol}>
-              <Text style={label}>Name</Text>
-            </Column>
-            <Column>
-              <Text style={value}>{name}</Text>
-            </Column>
-          </Row>
-          
-          <Row style={detailRow}>
-            <Column style={labelCol}>
-              <Text style={label}>Email</Text>
-            </Column>
-            <Column>
-              <Text style={value}>{email}</Text>
-            </Column>
-          </Row>
-          
-          <Row style={detailRow}>
-            <Column style={labelCol}>
-              <Text style={label}>Subject</Text>
-            </Column>
-            <Column>
-              <Text style={value}>{subject}</Text>
-            </Column>
-          </Row>
-          
-          <Hr style={hr} />
-          
-          <Text style={label}>Message</Text>
-          <Section style={messageContainer}>
-            <Text style={messageText}>"{message}"</Text>
-          </Section>
+          {[
+            { label: "Full Name", text: name },
+            { label: "Email", text: email },
+            { label: "Enquiring as", text: enquiringAs },
+            { label: "Principal jurisdiction(s)", text: jurisdictions },
+            { label: "Indicative allocation", text: allocation },
+            { label: "Timeline", text: timeline },
+          ].map((detail) => (
+            <Row key={detail.label} style={detailRow}>
+              <Column style={labelCol}>
+                <Text style={label}>{detail.label}</Text>
+              </Column>
+              <Column>
+                <Text style={value}>{detail.text}</Text>
+              </Column>
+            </Row>
+          ))}
+
+          {/* Optional answers only appear when the visitor filled them in */}
+          {[
+            { label: "What would you most like to resolve?", text: resolve },
+            { label: "Introduced by", text: introducedBy },
+          ]
+            .filter((answer) => answer.text?.trim())
+            .map((answer) => (
+              <Section key={answer.label}>
+                <Hr style={hr} />
+                <Text style={label}>{answer.label}</Text>
+                <Section style={messageContainer}>
+                  <Text style={messageText}>{answer.text}</Text>
+                </Section>
+              </Section>
+            ))}
         </Section>
         
         <Section style={footer}>
@@ -153,7 +161,7 @@ const detailRow = {
 };
 
 const labelCol = {
-  width: "100px",
+  width: "190px",
 };
 
 const label = {

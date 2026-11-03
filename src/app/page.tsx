@@ -13,6 +13,7 @@ import ClientsSection from "@/components/sections/ClientsSection";
 import InsightsSection from "@/components/sections/InsightsSection";
 // import TestimonialsSection from "@/components/sections/TestimonialsSection";
 import CTASection from "@/components/sections/CTASection";
+import CapitalMigrationSection from "@/components/sections/CapitalMigrationSection";
 import ContactSection from "@/components/sections/ContactSection";
 import FooterSection from "@/components/sections/FooterSection";
 import Navbar from "@/components/Navbar";
@@ -121,6 +122,7 @@ const HomePageContent = () => {
       {/* Testimonials hidden for now at the client's request — uncomment (and its import) to bring it back */}
       {/* <TestimonialsSection /> */}
       <CTASection />
+      <CapitalMigrationSection />
       <ContactSection />
       <FooterSection />
     </main>

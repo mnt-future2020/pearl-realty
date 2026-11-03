@@ -145,7 +145,7 @@ const CTASection = () => {
           {/* Hero: The Interactive Phone (Centered Bottom) */}
           <motion.div
             style={{ y: phoneY }}
-            className="relative w-full flex justify-center items-start -mt-10 md:-mt-20 -mb-20 md:-mb-40 pointer-events-none"
+            className="relative w-full flex justify-center items-start -mt-10 md:-mt-20 -mb-40 md:-mb-60 pointer-events-none"
           >
             <motion.div
               className="relative w-[280px] h-[560px] md:w-[480px] md:h-[960px]"

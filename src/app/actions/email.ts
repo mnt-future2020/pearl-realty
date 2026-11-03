@@ -2,7 +2,7 @@
 
 import nodemailer from "nodemailer";
 import { render } from "@react-email/render";
-import { ContactTemplate } from "@/components/emails/ContactTemplate";
+import { ContactTemplate, type ContactTemplateProps } from "@/components/emails/ContactTemplate";
 import React from "react";
 
 const transporter = nodemailer.createTransport({
@@ -13,17 +13,12 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-export async function sendEmail(formData: {
-  name: string;
-  email: string;
-  subject: string;
-  message: string;
-}) {
+export async function sendEmail(formData: ContactTemplateProps) {
   try {
-    const { name, email, subject, message } = formData;
+    const { name, email } = formData;
 
     const emailHtml = await render(
-      ContactTemplate({ name, email, subject, message }) as React.ReactElement
+      ContactTemplate(formData) as React.ReactElement
     );
 
     const mailOptions = {
@@ -31,7 +26,7 @@ export async function sendEmail(formData: {
       to: "raghunath@pearlrealty.ae",
       // "Reply" in the inbox goes straight to the visitor, not to the sending Gmail
       replyTo: email,
-      subject: `New Institutional Enquiry: ${subject}`,
+      subject: `New Assessment Request: ${name}`,
       html: emailHtml,
     };
 

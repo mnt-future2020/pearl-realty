@@ -1,10 +1,10 @@
 "use client";
 
 import React, { useRef, useEffect, useState } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import ScrollReveal from "@/components/ScrollReveal";
+import DarkSectionBackground, { DEEP_GRAPHITE } from "@/components/DarkSectionBackground";
 import MagneticButton from "@/components/MagneticButton";
 import Link from "next/link";
 
@@ -26,18 +26,8 @@ const OpportunitySection = () => {
   const triggerRef = useRef<HTMLDivElement>(null);
 
   return (
-    <div id="opportunity" ref={triggerRef} className="relative min-h-screen overflow-hidden bg-charcoal-deep text-white dark py-24 md:py-32">
-      {/* Cinematic Background */}
-      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
-        {/* Subtle Grid */}
-        <div className="absolute inset-0 opacity-[0.03]"
-          style={{ backgroundImage: 'linear-gradient(#C19B6C 1px, transparent 1px), linear-gradient(90deg, #C19B6C 1px, transparent 1px)', backgroundSize: '60px 60px' }}
-        />
-
-        {/* Glowing Accents */}
-        <div className="absolute top-1/4 left-1/4 w-[600px] h-[600px] bg-champagne/5 rounded-full blur-[120px]" />
-        <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-gold/5 rounded-full blur-[100px]" />
-      </div>
+    <div id="opportunity" ref={triggerRef} className="relative overflow-hidden bg-charcoal-deep text-white dark pt-24 md:pt-32 pb-12 md:pb-16" style={DEEP_GRAPHITE}>
+      <DarkSectionBackground pattern="waves" />
 
       <div className="container mx-auto px-6 relative z-10 h-full flex flex-col justify-center">
         {/* Section Header */}
@@ -53,7 +43,7 @@ const OpportunitySection = () => {
         {opportunities.map((opt, i) => (
           <div
             key={opt.id}
-            className="w-full grid md:grid-cols-2 gap-12 md:gap-24 items-center"
+            className="w-full grid md:grid-cols-2 lg:grid-cols-[minmax(0,36rem)_auto] lg:justify-center gap-12 lg:gap-16 items-center"
           >
             {/* Left Content */}
             <div className="flex flex-col items-start text-left">
@@ -111,20 +101,6 @@ const OpportunitySection = () => {
                     </p>
                   )}
                 </ScrollReveal>
-
-                {/* Aesthetic Graph line - Hidden on mobile */}
-                <svg className="hidden md:block w-full max-w-[400px] mt-12 md:mt-20 opacity-30 h-16 md:ml-auto md:mr-0" viewBox="0 0 300 50">
-                  <motion.path
-                    d="M0 45 L50 35 L100 40 L150 20 L200 25 L250 5 L300 0"
-                    fill="none"
-                    stroke="#C19B6C"
-                    strokeWidth="2"
-                    initial={{ pathLength: 0 }}
-                    whileInView={{ pathLength: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 2, delay: 0.8 }}
-                  />
-                </svg>
 
                 {/* Explore Analysis Button - Mobile Position (at the end) */}
                 <div className="mt-12 md:hidden flex justify-center">

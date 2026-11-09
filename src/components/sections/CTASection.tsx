@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect } from "react";
 import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
 import ScrollReveal from "@/components/ScrollReveal";
+import DarkSectionBackground, { DEEP_GRAPHITE } from "@/components/DarkSectionBackground";
 
 import MagneticButton from "@/components/MagneticButton";
 
@@ -77,7 +78,10 @@ const CTASection = () => {
       <section
         ref={containerRef}
         className="relative flex flex-col items-center overflow-hidden pt-10 md:pt-20 pb-0 bg-charcoal-deep dark"
+        style={DEEP_GRAPHITE}
       >
+        <DarkSectionBackground pattern="skyline" />
+
         {/* Cinematic Background Layer */}
         <div className="absolute inset-0 pointer-events-none">
           {/* Centered Deep Gold Glow */}

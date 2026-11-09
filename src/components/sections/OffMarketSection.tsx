@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useRef } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import React from "react";
+import { motion } from "framer-motion";
 import ScrollReveal from "@/components/ScrollReveal";
+import DarkSectionBackground, { DEEP_GRAPHITE } from "@/components/DarkSectionBackground";
 import MagneticButton from "@/components/MagneticButton";
 import { CheckCircle2 } from "lucide-react";
 
@@ -53,14 +54,6 @@ const advisoryTier = {
 };
 
 export default function OffMarketSection() {
-  const containerRef = useRef<HTMLElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start end", "end start"],
-  });
-
-  const yBackground = useTransform(scrollYProgress, [0, 1], ["0%", "20%"]);
-
   // Variants for staggered checklist animation
   const listVariants = {
     hidden: { opacity: 0 },
@@ -79,28 +72,11 @@ export default function OffMarketSection() {
 
   return (
     <section
-      ref={containerRef}
       id="off-market"
-      className="relative bg-[#0a0a0a] text-white py-24 md:py-32 overflow-hidden dark"
+      className="relative bg-charcoal-deep text-white py-24 md:py-32 overflow-hidden dark"
+      style={DEEP_GRAPHITE}
     >
-      {/* Background Elements */}
-      <motion.div
-        style={{ y: yBackground }}
-        className="absolute inset-0 pointer-events-none opacity-20"
-      >
-        <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-[#C7A56A] blur-[150px] rounded-full opacity-10 mix-blend-screen" />
-        <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-white blur-[120px] rounded-full opacity-5 mix-blend-screen" />
-
-        {/* Abstract Blueprint Lines */}
-        <svg className="absolute w-full h-full opacity-[0.03]" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <pattern id="gridPattern" width="40" height="40" patternUnits="userSpaceOnUse">
-              <path d="M 40 0 L 0 0 0 40" fill="none" stroke="white" strokeWidth="1" />
-            </pattern>
-          </defs>
-          <rect width="100%" height="100%" fill="url(#gridPattern)" />
-        </svg>
-      </motion.div>
+      <DarkSectionBackground pattern="lattice" />
 
       <div className="relative z-10 max-w-7xl mx-auto px-6">
         {/* Header */}
@@ -130,7 +106,7 @@ export default function OffMarketSection() {
         {/* Unified Private Service Card */}
         <ScrollReveal delay={500}>
           <div className="group relative p-[1px] rounded-3xl overflow-hidden bg-gradient-to-r from-[#C7A56A]/40 via-[#C7A56A]/10 to-[#C7A56A]/40 shadow-2xl transition-all duration-700">
-            <div className="relative bg-[#0a0a0a] rounded-3xl p-8 md:p-16 bg-gradient-to-br from-[#0d0d0d] to-[#141414]">
+            <div className="relative bg-charcoal-deep rounded-3xl p-8 md:p-16 bg-gradient-to-br from-white/[0.05] to-white/[0.02]">
               <div className="flex flex-col lg:flex-row gap-16 lg:gap-20">
 
                 {/* Left: Identity & Core Details */}

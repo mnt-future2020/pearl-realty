@@ -101,11 +101,10 @@ const HeroSection = () => {
           className={`transition-all duration-1000 delay-500 ${loaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}
         >
           <span
-            className="font-body text-[10px] sm:text-xs uppercase"
+            className="font-body text-[10px] sm:text-xs uppercase tracking-[0.15em] sm:tracking-[0.28em]"
             style={{
               color: "#e0a94bff",
               fontWeight: 600,
-              letterSpacing: typeof window !== 'undefined' && window.innerWidth < 640 ? "0.15em" : "0.28em",
               textShadow: "0 2px 8px rgba(255,255,255,0.18)",
               padding: "6px 14px",
               backdropFilter: "blur(8px)",

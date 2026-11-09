@@ -272,3 +272,28 @@
   50% { opacity: 1; }
   100% { transform: translateX(200%); opacity: 0; }
 }
+/* ── Dark section background patterns ── */
+@keyframes pattern-flow {
+  to { stroke-dashoffset: -160; }
+}
+
+@keyframes pattern-twinkle {
+  0%, 100% { opacity: 0.08; }
+  50% { opacity: 1; }
+}
+
+@keyframes pattern-drift {
+  to { transform: translateX(-1920px); }
+}
+
+.dark-pattern svg * {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dark-pattern svg,
+  .dark-pattern svg * {
+    animation: none !important;
+  }
+}

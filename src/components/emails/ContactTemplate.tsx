@@ -18,7 +18,7 @@ export interface ContactTemplateProps {
   name: string;
   email: string;
   enquiringAs: string;
-  jurisdictions: string;
+  phone: string;
   allocation: string;
   timeline: string;
   resolve?: string;
@@ -29,7 +29,7 @@ export const ContactTemplate = ({
   name,
   email,
   enquiringAs,
-  jurisdictions,
+  phone,
   allocation,
   timeline,
   resolve,
@@ -56,7 +56,7 @@ export const ContactTemplate = ({
             { label: "Full Name", text: name },
             { label: "Email", text: email },
             { label: "Enquiring as", text: enquiringAs },
-            { label: "Principal jurisdiction(s)", text: jurisdictions },
+            { label: "Phone Number", text: phone },
             { label: "Indicative allocation", text: allocation },
             { label: "Timeline", text: timeline },
           ].map((detail) => (

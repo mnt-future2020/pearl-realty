@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
-import { useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Smile, Send, Mail, Info, ChevronDown } from "lucide-react";
 import MagneticButton from "./MagneticButton";
 import ScrollReveal from "./ScrollReveal";
@@ -12,6 +12,14 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import {
+  type CountryCode,
+  getCountries,
+  getCountryCallingCode,
+  parsePhoneNumberFromString,
+} from "libphonenumber-js";
 
 import { sendEmail } from "@/app/actions/email";
 
@@ -19,7 +27,8 @@ const emptyForm = {
   name: "",
   email: "",
   enquiringAs: "",
-  jurisdictions: "",
+  enquiringAsOther: "",
+  phone: "",
   allocation: "",
   timeline: "",
   resolve: "",
@@ -35,7 +44,22 @@ type Field = {
   options?: string[];
   multiline?: boolean;
   optional?: boolean;
+  isPhone?: boolean;
 };
+
+const OTHER_OPTION = "Others (Ex: Individual)";
+
+const regionNames = new Intl.DisplayNames(["en"], { type: "region" });
+
+const countries = getCountries()
+  .map((code) => ({
+    code,
+    name: regionNames.of(code) ?? code,
+    dial: getCountryCallingCode(code),
+    // Regional-indicator letters render as the flag, or as the two-letter code where flags aren't supported
+    flag: String.fromCodePoint(...code.split("").map((letter) => 127397 + letter.charCodeAt(0))),
+  }))
+  .sort((a, b) => a.name.localeCompare(b.name));
 
 const fields: Field[] = [
   { id: "name", label: "Full Name" },
@@ -49,13 +73,14 @@ const fields: Field[] = [
       "Multi-family office",
       "Private banker / advisor",
       "Lawyer / trust company",
+      OTHER_OPTION,
     ],
   },
-  { id: "jurisdictions", label: "Principal jurisdiction(s)" },
+  { id: "phone", label: "Phone Number", isPhone: true },
   {
     id: "allocation",
     label: "Indicative allocation to Dubai real assets",
-    options: ["Under USD 1M", "USD 1M – 5M", "USD 5M – 20M", "USD 20M+", "Prefer to discuss"],
+    options: ["Under AED 1M", "AED 1M – 5M", "AED 5M – 20M", "AED 20M+", "Prefer to discuss"],
   },
   {
     id: "timeline",
@@ -76,6 +101,20 @@ const ContactForm = () => {
   }>({ type: null, message: "" });
 
   const [focused, setFocused] = useState<string | null>(null);
+
+  const [phoneCountry, setPhoneCountry] = useState<CountryCode>("AE");
+  const [phoneTouched, setPhoneTouched] = useState(false);
+  const [countryPickerOpen, setCountryPickerOpen] = useState(false);
+  const phoneRef = useRef<HTMLInputElement>(null);
+
+  const selectedCountry = countries.find((country) => country.code === phoneCountry)!;
+  const parsedPhone = parsePhoneNumberFromString(formState.phone, phoneCountry);
+  const phoneError = formState.phone && !parsedPhone?.isValid() ? `Enter a valid phone number for ${selectedCountry.name}` : "";
+
+  // Feeds the browser's own form check, so a bad number blocks submit like any empty required field
+  useEffect(() => {
+    phoneRef.current?.setCustomValidity(phoneError);
+  }, [phoneError]);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const mouseX = useMotionValue(0);
@@ -110,7 +149,12 @@ const ContactForm = () => {
     setSubmitStatus({ type: null, message: "" });
 
     try {
-      const result = await sendEmail(formState);
+      const { enquiringAsOther, ...details } = formState;
+      const result = await sendEmail({
+        ...details,
+        enquiringAs: details.enquiringAs === OTHER_OPTION ? `Others: ${enquiringAsOther.trim()}` : details.enquiringAs,
+        phone: parsedPhone?.formatInternational() ?? details.phone,
+      });
 
       if (result.success) {
         setSubmitStatus({
@@ -118,6 +162,7 @@ const ContactForm = () => {
           message: "Enquiry sent successfully. Our specialists will contact you shortly.",
         });
         setFormState(emptyForm);
+        setPhoneTouched(false);
         // Clear status after 5 seconds
         setTimeout(() => setSubmitStatus({ type: null, message: "" }), 5000);
       } else {
@@ -138,7 +183,7 @@ const ContactForm = () => {
     }
   };
 
-  const inputClasses = "w-full bg-transparent border-none outline-none py-3 font-body text-[#111111] placeholder:text-[#111111]/30 transition-all duration-300";
+  const inputClasses = "scroll-mt-32 w-full bg-transparent border-none outline-none py-3 font-body text-[#111111] placeholder:text-[#111111]/30 transition-all duration-300";
 
   return (
     <>
@@ -205,88 +250,211 @@ const ContactForm = () => {
               <div className="grid md:grid-cols-2 gap-x-10 gap-y-7">
                 {fields.map((field) => {
                   const isRaised = focused === field.id || !!formState[field.id];
+                  const showOtherInput = field.id === "enquiringAs" && formState.enquiringAs === OTHER_OPTION;
 
                   return (
-                    <div key={field.id} className={`relative group ${field.multiline ? "md:col-span-2" : ""}`}>
-                      {field.options ? (
-                        // Non-modal so opening a menu doesn't lock the page and make it jump
-                        <DropdownMenu modal={false} onOpenChange={(open) => setFocused(open ? field.id : null)}>
-                          <DropdownMenuTrigger asChild>
-                            <button
-                              type="button"
-                              aria-label={`${field.label}${formState[field.id] ? `: ${formState[field.id]}` : ""}`}
-                              className={`${inputClasses} min-h-12 flex items-center justify-between gap-3 text-left cursor-pointer`}
+                    <div key={field.id} className={field.multiline ? "md:col-span-2" : ""}>
+                      <div className="relative group">
+                        {field.options ? (
+                          // Non-modal so opening a menu doesn't lock the page and make it jump
+                          <DropdownMenu modal={false} onOpenChange={(open) => setFocused(open ? field.id : null)}>
+                            <DropdownMenuTrigger asChild>
+                              <button
+                                type="button"
+                                aria-label={`${field.label}${formState[field.id] ? `: ${formState[field.id]}` : ""}`}
+                                className={`${inputClasses} min-h-12 flex items-center justify-between gap-3 text-left cursor-pointer`}
+                              >
+                                <span>{formState[field.id]}</span>
+                                <ChevronDown
+                                  className={`w-4 h-4 shrink-0 text-[#9E7A43] transition-transform duration-300 ${focused === field.id ? "rotate-180" : ""}`}
+                                />
+                              </button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent
+                              align="start"
+                              data-lenis-prevent
+                              className="w-[var(--radix-dropdown-menu-trigger-width)] rounded-none border-[#C7A56A]/30 bg-white text-[#111111] shadow-[0_20px_50px_rgba(0,0,0,0.12)]"
                             >
-                              <span>{formState[field.id]}</span>
-                              <ChevronDown
-                                className={`w-4 h-4 shrink-0 text-[#9E7A43] transition-transform duration-300 ${focused === field.id ? "rotate-180" : ""}`}
-                              />
-                            </button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent
-                            align="start"
-                            data-lenis-prevent
-                            className="w-[var(--radix-dropdown-menu-trigger-width)] rounded-none border-[#C7A56A]/30 bg-white text-[#111111] shadow-[0_20px_50px_rgba(0,0,0,0.12)]"
-                          >
-                            <DropdownMenuRadioGroup
+                              <DropdownMenuRadioGroup
+                                value={formState[field.id]}
+                                onValueChange={(value) =>
+                                  setFormState({
+                                    ...formState,
+                                    [field.id]: value,
+                                    ...(field.id === "enquiringAs" && value !== OTHER_OPTION ? { enquiringAsOther: "" } : {}),
+                                  })
+                                }
+                              >
+                                {field.options.map((option) => (
+                                  <DropdownMenuRadioItem
+                                    key={option}
+                                    value={option}
+                                    className="cursor-pointer rounded-none py-2.5 font-body text-sm focus:bg-[#C7A56A]/15 focus:text-[#111111]"
+                                  >
+                                    {option}
+                                  </DropdownMenuRadioItem>
+                                ))}
+                              </DropdownMenuRadioGroup>
+                            </DropdownMenuContent>
+                            {/* Lets the browser's required check cover the menu like any other field */}
+                            <input
+                              required
+                              tabIndex={-1}
+                              aria-hidden="true"
                               value={formState[field.id]}
-                              onValueChange={(value) => setFormState({ ...formState, [field.id]: value })}
+                              onChange={() => {}}
+                              className="scroll-mt-32 absolute bottom-0 left-0 w-full h-px opacity-0 pointer-events-none"
+                            />
+                          </DropdownMenu>
+                        ) : field.isPhone ? (
+                          <div className="flex items-center gap-4">
+                            <Popover
+                              open={countryPickerOpen}
+                              onOpenChange={(open) => {
+                                setCountryPickerOpen(open);
+                                setFocused(open ? field.id : null);
+                              }}
                             >
-                              {field.options.map((option) => (
-                                <DropdownMenuRadioItem
-                                  key={option}
-                                  value={option}
-                                  className="cursor-pointer rounded-none py-2.5 font-body text-sm focus:bg-[#C7A56A]/15 focus:text-[#111111]"
+                              <PopoverTrigger asChild>
+                                <button
+                                  type="button"
+                                  aria-label={`Country code: ${selectedCountry.name} +${selectedCountry.dial}`}
+                                  className="w-24 min-h-12 shrink-0 flex items-center justify-between gap-1 font-body text-[#111111] cursor-pointer outline-none"
                                 >
-                                  {option}
-                                </DropdownMenuRadioItem>
-                              ))}
-                            </DropdownMenuRadioGroup>
-                          </DropdownMenuContent>
-                          {/* Lets the browser's required check cover the menu like any other field */}
-                          <input
-                            required
-                            tabIndex={-1}
-                            aria-hidden="true"
+                                  <span className="whitespace-nowrap">
+                                    {selectedCountry.flag} +{selectedCountry.dial}
+                                  </span>
+                                  <ChevronDown
+                                    className={`w-4 h-4 shrink-0 text-[#9E7A43] transition-transform duration-300 ${countryPickerOpen ? "rotate-180" : ""}`}
+                                  />
+                                </button>
+                              </PopoverTrigger>
+                              <PopoverContent
+                                align="start"
+                                data-lenis-prevent
+                                className="w-80 max-w-[calc(100vw-2rem)] p-0 rounded-none border-[#C7A56A]/30 bg-white text-[#111111] shadow-[0_20px_50px_rgba(0,0,0,0.12)]"
+                              >
+                                <Command className="rounded-none bg-white text-[#111111]">
+                                  <CommandInput placeholder="Search country or code" className="font-body placeholder:text-[#111111]/50" />
+                                  <CommandList>
+                                    <CommandEmpty className="py-6 text-center font-body text-sm">No country found.</CommandEmpty>
+                                    <CommandGroup>
+                                      {countries.map((country) => (
+                                        <CommandItem
+                                          key={country.code}
+                                          value={`${country.name} ${country.code} +${country.dial}`}
+                                          onSelect={() => {
+                                            setPhoneCountry(country.code);
+                                            setCountryPickerOpen(false);
+                                            setFocused(null);
+                                          }}
+                                          className="cursor-pointer rounded-none py-2.5 gap-2 font-body data-[selected=true]:bg-[#C7A56A]/15 data-[selected='true']:bg-[#C7A56A]/15 data-[selected=true]:text-[#111111]"
+                                        >
+                                          <span>{country.flag}</span>
+                                          <span className="flex-1 min-w-0 truncate">{country.name}</span>
+                                          <span className="text-[#111111]/60">+{country.dial}</span>
+                                        </CommandItem>
+                                      ))}
+                                    </CommandGroup>
+                                  </CommandList>
+                                </Command>
+                              </PopoverContent>
+                            </Popover>
+                            <input
+                              ref={phoneRef}
+                              type="tel"
+                              name={field.id}
+                              inputMode="tel"
+                              autoComplete="tel-national"
+                              maxLength={20}
+                              required
+                              aria-label={field.label}
+                              aria-invalid={phoneTouched && !!phoneError}
+                              value={formState[field.id]}
+                              onChange={(e) => setFormState({ ...formState, phone: e.target.value.replace(/[^\d\s()+-]/g, "") })}
+                              onFocus={() => setFocused(field.id)}
+                              onBlur={() => {
+                                setFocused(null);
+                                setPhoneTouched(true);
+                              }}
+                              onInvalid={() => setPhoneTouched(true)}
+                              className={`${inputClasses} min-w-0 flex-1`}
+                              placeholder=" "
+                            />
+                          </div>
+                        ) : field.multiline ? (
+                          <textarea
+                            name={field.id}
+                            rows={2}
                             value={formState[field.id]}
-                            onChange={() => {}}
-                            className="absolute bottom-0 left-0 w-full h-px opacity-0 pointer-events-none"
+                            onChange={handleChange}
+                            onFocus={() => setFocused(field.id)}
+                            onBlur={() => setFocused(null)}
+                            className={`${inputClasses} resize-none`}
+                            placeholder=" "
                           />
-                        </DropdownMenu>
-                      ) : field.multiline ? (
-                        <textarea
-                          name={field.id}
-                          rows={2}
-                          value={formState[field.id]}
-                          onChange={handleChange}
-                          onFocus={() => setFocused(field.id)}
-                          onBlur={() => setFocused(null)}
-                          className={`${inputClasses} resize-none`}
-                          placeholder=" "
-                        />
-                      ) : (
-                        <input
-                          type={field.type || "text"}
-                          name={field.id}
-                          autoComplete="off"
-                          required
-                          value={formState[field.id]}
-                          onChange={handleChange}
-                          onFocus={() => setFocused(field.id)}
-                          onBlur={() => setFocused(null)}
-                          className={inputClasses}
-                          placeholder=" "
-                        />
-                      )}
-                      <label className={`absolute left-0 transition-all duration-300 pointer-events-none font-body text-xs md:text-[13px] ${isRaised ? '-top-3 text-[#9E7A43]' : 'top-3 text-[#111111]/75'}`}>
-                        {field.label} {field.optional ? <span className="opacity-75">(optional)</span> : "*"}
-                      </label>
-                      <div className="absolute bottom-0 left-0 w-full h-[1px] bg-[#111111]/30">
-                        <motion.div
-                          animate={{ scaleX: focused === field.id ? 1 : 0 }}
-                          className="h-full bg-[#C7A56A] origin-left shadow-[0_0_8px_rgba(199,165,106,0.3)]"
-                        />
+                        ) : (
+                          <input
+                            type={field.type || "text"}
+                            name={field.id}
+                            autoComplete="off"
+                            required
+                            value={formState[field.id]}
+                            onChange={handleChange}
+                            onFocus={() => setFocused(field.id)}
+                            onBlur={() => setFocused(null)}
+                            className={inputClasses}
+                            placeholder=" "
+                          />
+                        )}
+                        <label className={`absolute transition-all duration-300 pointer-events-none font-body text-xs md:text-[13px] ${isRaised ? '-top-3 left-0 text-[#9E7A43]' : `top-3 ${field.isPhone ? 'left-28' : 'left-0'} text-[#111111]/75`}`}>
+                          {field.label} {field.optional ? <span className="opacity-75">(optional)</span> : "*"}
+                        </label>
+                        <div className="absolute bottom-0 left-0 w-full h-[1px] bg-[#111111]/30">
+                          <motion.div
+                            animate={{ scaleX: focused === field.id ? 1 : 0 }}
+                            className="h-full bg-[#C7A56A] origin-left shadow-[0_0_8px_rgba(199,165,106,0.3)]"
+                          />
+                        </div>
                       </div>
+                      {field.isPhone && phoneTouched && phoneError && (
+                        <p role="alert" className="mt-1 font-body text-[11px] text-red-600">
+                          {phoneError}
+                        </p>
+                      )}
+                      {showOtherInput && (
+                        <motion.div
+                          initial={{ opacity: 0, y: -8 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.4 }}
+                          className="relative group mt-7"
+                        >
+                          <input
+                            type="text"
+                            name="enquiringAsOther"
+                            autoComplete="off"
+                            required
+                            pattern=".*\S.*"
+                            title="Please tell us how you are enquiring"
+                            aria-label="Please specify"
+                            value={formState.enquiringAsOther}
+                            onChange={handleChange}
+                            onFocus={() => setFocused("enquiringAsOther")}
+                            onBlur={() => setFocused(null)}
+                            className={inputClasses}
+                            placeholder=" "
+                          />
+                          <label className={`absolute left-0 transition-all duration-300 pointer-events-none font-body text-xs md:text-[13px] ${focused === "enquiringAsOther" || formState.enquiringAsOther ? '-top-3 text-[#9E7A43]' : 'top-3 text-[#111111]/75'}`}>
+                            Please specify *
+                          </label>
+                          <div className="absolute bottom-0 left-0 w-full h-[1px] bg-[#111111]/30">
+                            <motion.div
+                              animate={{ scaleX: focused === "enquiringAsOther" ? 1 : 0 }}
+                              className="h-full bg-[#C7A56A] origin-left shadow-[0_0_8px_rgba(199,165,106,0.3)]"
+                            />
+                          </div>
+                        </motion.div>
+                      )}
                     </div>
                   );
                 })}

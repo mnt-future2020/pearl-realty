@@ -1,6 +1,7 @@
 "use server";
 
 import nodemailer from "nodemailer";
+import { isValidPhoneNumber } from "libphonenumber-js";
 import { render } from "@react-email/render";
 import { ContactTemplate, type ContactTemplateProps } from "@/components/emails/ContactTemplate";
 import React from "react";
@@ -15,7 +16,12 @@ const transporter = nodemailer.createTransport({
 
 export async function sendEmail(formData: ContactTemplateProps) {
   try {
-    const { name, email } = formData;
+    const { name, email, phone } = formData;
+
+    // The browser check can be bypassed, so the number is verified again here
+    if (!isValidPhoneNumber(phone)) {
+      return { success: false, error: "Please enter a valid phone number." };
+    }
 
     const emailHtml = await render(
       ContactTemplate(formData) as React.ReactElement

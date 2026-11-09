@@ -12,6 +12,7 @@ import {
   useTransform,
 } from "framer-motion";
 import ScrollReveal from "@/components/ScrollReveal";
+import DarkSectionBackground, { DEEP_GRAPHITE } from "@/components/DarkSectionBackground";
 
 // --- Shared Motion ---
 
@@ -32,13 +33,8 @@ const draw = {
   }),
 };
 
-// Filling with the theme background and painting the stroke first hides the overlapping contours of the font
-const outlineText = (opacity: number) =>
-  ({
-    WebkitTextStroke: `2px hsl(var(--champagne) / ${opacity})`,
-    color: "hsl(var(--background))",
-    paintOrder: "stroke fill",
-  }) as React.CSSProperties;
+// A translucent tint, so the section glow shows through the digits
+const numberTint = (opacity: number) => ({ color: `hsl(var(--champagne) / ${opacity})` });
 
 const useMediaQuery = (media: string) => {
   const [matches, setMatches] = useState(false);
@@ -214,38 +210,36 @@ const MaskedWords = ({ text, delay = 0, gold = false }: { text: string; delay?: 
   </>
 );
 
-// A label that sits on top of its own oversized outline, which slides sideways as the page scrolls
-const ParallaxLabel = ({ text, reverse = false, outline = 0.32 }: { text: string; reverse?: boolean; outline?: number }) => {
-  const ref = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
-  const x = useTransform(scrollYProgress, [0, 1], reverse ? ["-12%", "12%"] : ["12%", "-12%"]);
+const LABEL_SIZES = {
+  primary: {
+    box: "h-20 md:h-28 lg:h-32",
+    text: "text-base md:text-3xl lg:text-4xl tracking-[0.2em] md:tracking-[0.3em] gap-3 md:gap-8",
+    line: "w-4 md:w-20 h-0.5",
+  },
+  secondary: {
+    box: "h-10 md:h-12",
+    text: "text-xs md:text-sm lg:text-base tracking-[0.3em] gap-3 md:gap-4",
+    line: "w-6 md:w-10 h-px",
+  },
+};
+
+// The dark: colours apply inside the How It Works band, which carries the .dark theme class
+const FeaturedLabel = ({ text, size }: { text: string; size: keyof typeof LABEL_SIZES }) => {
+  const { box, text: textClass, line } = LABEL_SIZES[size];
+  const lineClass = `${line} bg-gold-muted/70 dark:bg-champagne-glow/70`;
+  const reveal = {
+    initial: { scaleX: 0 },
+    whileInView: { scaleX: 1 },
+    viewport: { once: true },
+    transition: { duration: 1.2, ease: EASE },
+  };
 
   return (
-    <div ref={ref} className="relative flex items-center justify-center h-16 md:h-20 lg:h-24">
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none" aria-hidden="true">
-        <motion.span
-          style={{ x, ...outlineText(outline) }}
-          className="font-display font-light whitespace-nowrap leading-none text-[19vw] lg:text-[min(13vw,200px)]"
-        >
-          {text}
-        </motion.span>
-      </div>
-      <h3 className="relative z-10 flex items-center gap-4 font-body text-xs tracking-[0.4em] uppercase text-gold font-semibold">
-        <motion.span
-          className="w-8 md:w-12 h-px bg-champagne/50 origin-right"
-          initial={{ scaleX: 0 }}
-          whileInView={{ scaleX: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 1.2, ease: EASE }}
-        />
+    <div className={`flex items-center justify-center ${box}`}>
+      <h3 className={`flex items-center font-body uppercase whitespace-nowrap text-gold-muted dark:text-champagne-glow font-bold ${textClass}`}>
+        <motion.span className={`${lineClass} origin-right`} {...reveal} />
         {text}
-        <motion.span
-          className="w-8 md:w-12 h-px bg-champagne/50 origin-left"
-          initial={{ scaleX: 0 }}
-          whileInView={{ scaleX: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 1.2, ease: EASE }}
-        />
+        <motion.span className={`${lineClass} origin-left`} {...reveal} />
       </h3>
     </div>
   );
@@ -322,12 +316,12 @@ const ReceiveArch = ({
               {/* Inner arch line */}
               <div className="absolute inset-x-3 top-3 bottom-0 rounded-t-[999px] border border-b-0 border-champagne/25 group-hover:border-champagne/50 pointer-events-none" />
 
-              <div className="relative flex flex-col items-center text-center px-8 xl:px-12 pt-16 md:pt-20 pb-6">
-                <div className="w-24 h-24 md:w-28 md:h-28 mb-8 md:mb-10 transition-transform duration-700 ease-out group-hover:scale-110">
+              <div className="relative flex flex-col items-center text-center px-8 xl:px-14 pt-20 md:pt-24 xl:pt-28 pb-8 xl:pb-12">
+                <div className="w-32 h-32 md:w-36 md:h-36 xl:w-44 xl:h-44 mb-8 md:mb-10 transition-transform duration-700 ease-out group-hover:scale-110">
                   <Glyph />
                 </div>
-                <h4 className="font-display text-2xl xl:text-3xl font-light text-foreground mb-4">{item.title}</h4>
-                <p className="font-body text-sm md:text-base font-light leading-relaxed text-foreground/70 group-hover:text-foreground/90">
+                <h4 className="font-display text-3xl md:text-4xl xl:text-[2.75rem] xl:leading-tight font-light text-foreground mb-5">{item.title}</h4>
+                <p className="font-body text-base md:text-lg xl:text-xl font-light leading-relaxed text-foreground/70 group-hover:text-foreground/90">
                   {item.body}
                 </p>
               </div>
@@ -344,7 +338,7 @@ const ReceiveArches = ({ isDesktop }: { isDesktop: boolean }) => {
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
 
   return (
-    <div ref={ref} className="grid lg:grid-cols-3 lg:items-start gap-8 lg:gap-8 xl:gap-12 max-w-md lg:max-w-none mx-auto">
+    <div ref={ref} className="grid lg:grid-cols-3 lg:items-start gap-8 max-w-lg lg:max-w-none mx-auto min-[1400px]:-mx-12 min-[1700px]:-mx-24">
       {receives.map((item, i) => (
         <ReceiveArch key={item.title} item={item} index={i} progress={scrollYProgress} isDesktop={isDesktop} />
       ))}
@@ -383,35 +377,35 @@ const StepRow = ({
 }) => {
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
-  const numberY = useTransform(scrollYProgress, [0, 1], isDesktop ? [90, -90] : [0, 0]);
-  const textY = useTransform(scrollYProgress, [0, 1], isDesktop ? [24, -24] : [0, 0]);
+  const numberY = useTransform(scrollYProgress, [0, 1], isDesktop ? [24, -24] : [0, 0]);
+  const textY = useTransform(scrollYProgress, [0, 1], isDesktop ? [8, -8] : [0, 0]);
 
   const flipped = index % 2 === 1;
   const number = `0${index + 1}`;
-  const outline = outlineText(active ? 0.9 : 0.35);
+  const tint = numberTint(active ? 0.55 : 0.2);
 
   return (
-    <div ref={ref} className="relative flex items-center py-8 lg:py-0">
+    <div ref={ref} className="relative flex items-center py-4 lg:py-0">
       {/* Copy */}
       <motion.div
         style={{ y: textY }}
         className={`relative z-10 pl-14 lg:pl-0 lg:w-[42%] ${flipped ? "lg:ml-[58%]" : "lg:text-right"}`}
       >
         <span
-          style={outline}
-          className="lg:hidden block font-display font-light text-5xl leading-none mb-4"
+          style={tint}
+          className="lg:hidden block font-display font-light text-3xl leading-none mb-2"
         >
           {number}
         </span>
         <h4
-          className={`font-display text-3xl lg:text-4xl xl:text-5xl font-light mb-3 lg:mb-4 ${
+          className={`font-display text-2xl lg:text-3xl font-light mb-1 lg:mb-2 ${
             active ? "text-foreground" : "text-foreground/50"
           }`}
         >
           {step.title}
         </h4>
         <p
-          className={`font-body text-sm md:text-lg font-light leading-relaxed ${
+          className={`font-body text-sm md:text-base font-light leading-relaxed ${
             active ? "text-foreground/70" : "text-foreground/50"
           }`}
         >
@@ -426,8 +420,8 @@ const StepRow = ({
         }`}
         aria-hidden="true"
       >
-        <motion.div style={{ y: numberY }} className="relative font-display font-light leading-none text-[9rem] xl:text-[12rem]">
-          <span style={outline} className="block">
+        <motion.div style={{ y: numberY }} className="relative font-display font-light leading-none text-7xl xl:text-8xl">
+          <span style={tint} className="block">
             {number}
           </span>
           <span
@@ -517,7 +511,7 @@ const StepsPathway = ({ isDesktop, reduceMotion }: { isDesktop: boolean; reduceM
                   cx={node.x}
                   cy={node.y}
                   r="4"
-                  className={activeCount > i ? "fill-champagne stroke-champagne" : "fill-charcoal-deep stroke-champagne/50"}
+                  className={activeCount > i ? "fill-champagne stroke-champagne" : "fill-none stroke-champagne/50"}
                 />
               </g>
             ))}
@@ -534,7 +528,7 @@ const StepsPathway = ({ isDesktop, reduceMotion }: { isDesktop: boolean; reduceM
         </motion.div>
       </div>
 
-      <div className="grid auto-rows-fr lg:[grid-auto-rows:minmax(280px,1fr)]">
+      <div className="grid auto-rows-fr lg:[grid-auto-rows:minmax(140px,1fr)]">
         {steps.map((step, i) => (
           <StepRow key={step.title} step={step} index={i} active={activeCount > i} isDesktop={isDesktop} />
         ))}
@@ -545,8 +539,6 @@ const StepsPathway = ({ isDesktop, reduceMotion }: { isDesktop: boolean; reduceM
 
 // --- Section ---
 
-// Fills the corners above a dome, so the band below rises into the band before it
-const DOME_CORNERS = "M0 0 H1440 V80 Q720 -80 0 80 Z";
 const DOME = "M0 80 Q720 -80 1440 80 Z";
 
 const SectionCurve = ({ className, fill, d }: { className: string; fill: string; d: string }) => (
@@ -582,7 +574,7 @@ const CapitalMigrationSection = () => {
     // Sits above the CTA and overlaps it, so the hand image runs behind the dome. z-[35] clears the CTA's z-30 content.
     <section ref={sectionRef} id="capital-migration" className="relative z-[35] -mt-11 md:-mt-[75px] scroll-mt-16">
       {/* Light: heading and what you receive */}
-      <div className="relative overflow-hidden text-foreground pt-20 md:pt-28 pb-6">
+      <div className="relative overflow-hidden text-foreground pt-20 md:pt-28 pb-10 xl:pb-14">
         <SectionCurve className="top-0" fill="#F8F7F4" d={DOME} />
 
         <div className="absolute inset-x-0 top-11 md:top-[75px] bottom-0 bg-[#F8F7F4] pointer-events-none" aria-hidden="true">
@@ -658,25 +650,31 @@ const CapitalMigrationSection = () => {
 
           {/* What You Receive */}
           <div className="mt-4 md:mt-6">
-            <ParallaxLabel text="What you receive" outline={0.6} />
+            <FeaturedLabel text="What you receive" size="primary" />
             <ReceiveArches isDesktop={isDesktop} />
           </div>
         </div>
       </div>
 
       {/* Dark: how it works */}
-      <div className="relative overflow-hidden bg-charcoal-deep dark text-foreground pt-8 md:pt-14 pb-32 md:pb-44">
-        <SectionCurve className="top-0" fill="#F8F7F4" d={DOME_CORNERS} />
-
+      <div
+        className="relative overflow-hidden bg-charcoal-deep dark text-foreground pt-6 md:pt-8 pb-24 md:pb-32"
+        style={DEEP_GRAPHITE}
+      >
+        <DarkSectionBackground pattern="floorplan" glows={false} />
         <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
           <motion.div
+            style={{ y: glowOneY }}
+            className="absolute top-[5%] -left-40 w-[450px] md:w-[700px] h-[450px] md:h-[700px] bg-champagne/25 rounded-full blur-[160px]"
+          />
+          <motion.div
             style={{ y: glowTwoY }}
-            className="absolute top-[20%] -right-40 w-[450px] md:w-[700px] h-[450px] md:h-[700px] bg-champagne/10 rounded-full blur-[160px]"
+            className="absolute top-[20%] -right-40 w-[450px] md:w-[700px] h-[450px] md:h-[700px] bg-champagne/15 rounded-full blur-[160px]"
           />
         </div>
 
         <div className="relative z-10 max-w-7xl mx-auto px-6">
-          <ParallaxLabel text="How it works" reverse />
+          <FeaturedLabel text="How it works" size="secondary" />
           <StepsPathway isDesktop={isDesktop} reduceMotion={reduceMotion} />
         </div>
 

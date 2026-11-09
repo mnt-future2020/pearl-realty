@@ -32,10 +32,11 @@ const FooterSection = () => {
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[2px] bg-gradient-to-r from-transparent via-champagne/40 to-transparent" />
 
       <div className="max-w-7xl mx-auto px-6 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-8 mb-24">
+        {/* Content-width columns, so justify-between leaves equal gaps between them */}
+        <div className="flex flex-col lg:flex-row lg:justify-between gap-16 lg:gap-8 mb-24">
           {/* Brand Identity */}
-          <div className="lg:col-span-5">
-            <Link href="/" className="inline-block transform -translate-x-4">
+          <div className="max-w-sm">
+            <Link href="/" className="block w-fit mx-auto">
               <Image
                 src={logo}
                 alt="Pearl Realty"
@@ -66,10 +67,8 @@ const FooterSection = () => {
             </div>
           </div>
 
-          <div className="lg:col-span-1"></div>
-
           {/* Navigation Mandate */}
-          <div className="lg:col-span-3">
+          <div>
             <h4 className="font-display text-xs tracking-[0.4em] uppercase text-white/30 mb-8 underline underline-offset-8 decoration-champagne/30">The Mandate</h4>
             <nav className="flex flex-col gap-4">
               {[
@@ -93,7 +92,7 @@ const FooterSection = () => {
           </div>
 
           {/* Institutional Contact */}
-          <div className="lg:col-span-3">
+          <div>
             <h4 className="font-display text-xs tracking-[0.4em] uppercase text-white/30 mb-8 underline underline-offset-8 decoration-champagne/30">Global Reach</h4>
             <div className="space-y-6">
               <div>

@@ -126,32 +126,32 @@ export default function SplitCTA({
             </div>
 
             {/* RIGHT — CTA block */}
-            <div className={`${isLight ? "p-4 md:p-6" : "p-10 md:p-10"} flex flex-col justify-center items-start md:items-center gap-6`}>
+            <div className={`${isLight ? "py-4 px-0 md:p-6" : "p-5 md:p-10"} flex flex-col justify-center items-start md:items-center gap-6`}>
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.6, delay: 0.3 }}
-                className="w-full md:max-w-xs"
+                className="w-full max-sm:max-w-[280px] max-sm:mx-auto md:max-w-xs"
               >
                 {/* Primary button */}
                 <button
                   onClick={() => handleNavigation("services")}
-                  className={`group relative w-full flex items-center justify-center gap-3 bg-gold ${isLight ? "text-[#0A0A0A]" : "text-[#0A0A0A]"} font-body text-[10px] tracking-[0.25em] uppercase font-bold px-3 py-4 rounded-full overflow-hidden transition-all duration-500 hover:shadow-[0_0_24px_rgba(199,165,106,0.4)] mb-2`}
+                  className={`group relative w-full flex items-center justify-center gap-3 bg-gold max-sm:h-12 max-sm:!px-2 max-sm:py-0 max-sm:whitespace-nowrap max-sm:tracking-[0.1em] max-sm:gap-2 ${isLight ? "text-[#0A0A0A]" : "text-[#0A0A0A]"} font-body text-[10px] tracking-[0.25em] uppercase font-bold px-3 py-4 rounded-full overflow-hidden transition-all duration-500 hover:shadow-[0_0_24px_rgba(199,165,106,0.4)] mb-2`}
                 >
                   {/* Shimmer */}
                   <span className="absolute inset-0 -translate-x-full skew-x-[-20deg] bg-white/20 group-hover:translate-x-[200%] transition-transform duration-1000 ease-in-out" />
                   <span className="relative z-10">{primaryLabel}</span>
-                  <ArrowRight className="w-3.5 h-3.5 relative z-10 group-hover:translate-x-1 transition-transform duration-300" />
+                  <ArrowRight className="w-3.5 h-3.5 max-[359px]:hidden relative z-10 group-hover:translate-x-1 transition-transform duration-300" />
                 </button>
 
                 {/* Secondary button */}
                 <button
                   onClick={() => handleNavigation("contact")}
-                  className={`group w-full flex items-center justify-center gap-3 border ${isLight ? "border-charcoal/10 text-charcoal/60" : "border-white/15 text-white/70"} hover:text-gold hover:border-gold/50 font-body text-[10px] tracking-[0.25em] uppercase font-semibold px-5 py-4 rounded-full transition-all duration-300 hover:bg-gold/[0.03]`}
+                  className={`group w-full flex items-center justify-center gap-3 border max-sm:h-12 max-sm:!px-2 max-sm:py-0 max-sm:whitespace-nowrap max-sm:tracking-[0.1em] max-sm:gap-2 ${isLight ? "border-charcoal/10 text-charcoal/60" : "border-white/15 text-white/70"} hover:text-gold hover:border-gold/50 font-body text-[10px] tracking-[0.25em] uppercase font-semibold px-5 py-4 rounded-full transition-all duration-300 hover:bg-gold/[0.03]`}
                 >
                   <span className="relative z-10">{secondaryLabel}</span>
-                  <ArrowRight className={`w-3 h-3 relative z-10 ${isLight ? "opacity-100" : "opacity-0 group-hover:opacity-100"} group-hover:translate-x-1 transition-all duration-300`} />
+                  <ArrowRight className={`w-3 h-3 max-[359px]:hidden relative z-10 ${isLight ? "opacity-100" : "opacity-0 group-hover:opacity-100"} group-hover:translate-x-1 transition-all duration-300`} />
                 </button>
               </motion.div>
 

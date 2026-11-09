@@ -226,7 +226,7 @@ const Navbar = () => {
         <div className="px-6 py-5 border-t border-champagne/10">
           <button
             onClick={() => scrollTo("contact")}
-            className="w-full py-3 font-body text-xs tracking-[0.25em] uppercase border border-champagne/40 text-champagne hover:bg-champagne hover:text-background transition-all duration-500"
+            className="w-full py-3 max-sm:py-0 max-sm:h-12 max-sm:whitespace-nowrap max-sm:text-[10px] max-sm:tracking-[0.1em] font-body text-xs tracking-[0.25em] uppercase border border-champagne/40 text-champagne hover:bg-champagne hover:text-background transition-all duration-500"
           >
             Request Private Consultation
           </button>
